@@ -50,3 +50,15 @@ variable "consul_version" {
   description = "The HCP Consul version"
   default     = "v1.16.0"
 }
+
+variable "hcp_client_id" {
+  type = string
+}
+
+variable "hcp_client_secret" {
+  type = string
+}
+
+variable "project_id" {
+  type = string
+}

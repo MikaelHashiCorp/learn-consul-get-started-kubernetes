@@ -6,7 +6,7 @@ terraform {
     }
     hcp = {
       source  = "hashicorp/hcp"
-      version = ">= 0.18.0"
+      version = ">= 0.3.0"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
@@ -40,6 +40,9 @@ provider "aws" {
 }
 
 provider "hcp" {
+  client_id     = var.hcp_client_id
+  client_secret = var.hcp_client_secret
+  project_id    = var.project_id
 }
 
 provider "helm" {
