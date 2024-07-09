@@ -18,6 +18,7 @@ global:
     enabled: true
     enableAgentMetrics: true
     agentMetricsRetentionTime: "1m"
+  logLevel: debug   
 
 externalServers:
   enabled: true
@@ -36,3 +37,4 @@ connectInject:
   apiGateway:
     managedGatewayClass:
       serviceType: LoadBalancer
+  logLevel: debug 

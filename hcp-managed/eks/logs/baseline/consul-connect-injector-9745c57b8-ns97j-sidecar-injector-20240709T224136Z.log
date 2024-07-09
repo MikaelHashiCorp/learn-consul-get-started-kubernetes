@@ -1,0 +1,189 @@
+2024-07-09T22:39:30.740Z [INFO]  consul-server-connection-manager: trying to connect to a Consul server
+2024-07-09T22:39:30.837Z [DEBUG] consul-server-connection-manager: Resolved DNS name: name=learn-consul-gs-of6v.private.consul.2a58fb64-4c4f-4ba8-8c2e-03a9a04d6969.aws.hashicorp.cloud ip-addrs=["{172.25.37.0 }"]
+2024-07-09T22:39:30.837Z [INFO]  consul-server-connection-manager: discovered Consul servers: addresses=[172.25.37.0:8502]
+2024-07-09T22:39:30.837Z [INFO]  consul-server-connection-manager: current prioritized list of known Consul servers: addresses=[172.25.37.0:8502]
+2024-07-09T22:39:30.838Z [DEBUG] consul-server-connection-manager: switching to Consul server: address=172.25.37.0:8502
+2024-07-09T22:39:34.215Z [INFO]  consul-server-connection-manager: ACL auth method login succeeded: accessorID=713dc146-792d-f1d7-34fc-e14e080176fa
+2024-07-09T22:39:34.222Z [DEBUG] consul-server-connection-manager: feature: supported=false name=""
+2024-07-09T22:39:34.222Z [DEBUG] consul-server-connection-manager: feature: supported=true name=DATAPLANE_FEATURES_WATCH_SERVERS
+2024-07-09T22:39:34.222Z [DEBUG] consul-server-connection-manager: feature: supported=true name=DATAPLANE_FEATURES_EDGE_CERTIFICATE_MANAGEMENT
+2024-07-09T22:39:34.222Z [DEBUG] consul-server-connection-manager: feature: supported=true name=DATAPLANE_FEATURES_ENVOY_BOOTSTRAP_CONFIGURATION
+2024-07-09T22:39:34.222Z [INFO]  consul-server-connection-manager: connected to Consul server: address=172.25.37.0:8502
+2024-07-09T22:39:34.436Z [INFO]  consul-server-connection-manager: updated known Consul servers from watch stream: addresses=[172.25.37.0:8502]
+2024-07-09T22:39:34.790Z	INFO	controller-runtime.metrics	Metrics server is starting to listen	{"addr": "0.0.0.0:9444"}
+2024-07-09T22:39:34.792Z	INFO	setup	waiting for Consul cache sync
+2024-07-09T22:39:35.037Z	INFO	sync mark for api-gateway
+2024-07-09T22:39:35.139Z	INFO	sync mark for inline-certificate
+2024-07-09T22:39:35.337Z	INFO	sync mark for tcp-route
+2024-07-09T22:39:35.436Z	INFO	sync mark for http-route
+2024-07-09T22:39:35.436Z	INFO	setup	Consul cache synced
+2024-07-09T22:39:35.437Z	INFO	controller-runtime.webhook	Registering webhook	{"path": "/mutate"}
+2024-07-09T22:39:35.437Z	INFO	controller-runtime.webhook	Registering webhook	{"path": "/mutate-v1alpha1-servicedefaults"}
+2024-07-09T22:39:35.437Z	INFO	controller-runtime.webhook	Registering webhook	{"path": "/mutate-v1alpha1-serviceresolver"}
+2024-07-09T22:39:35.437Z	INFO	controller-runtime.webhook	Registering webhook	{"path": "/mutate-v1alpha1-proxydefaults"}
+2024-07-09T22:39:35.437Z	INFO	controller-runtime.webhook	Registering webhook	{"path": "/mutate-v1alpha1-mesh"}
+2024-07-09T22:39:35.437Z	INFO	controller-runtime.webhook	Registering webhook	{"path": "/mutate-v1alpha1-exportedservices"}
+2024-07-09T22:39:35.438Z	INFO	controller-runtime.webhook	Registering webhook	{"path": "/mutate-v1alpha1-servicerouter"}
+2024-07-09T22:39:35.438Z	INFO	controller-runtime.webhook	Registering webhook	{"path": "/mutate-v1alpha1-servicesplitter"}
+2024-07-09T22:39:35.438Z	INFO	controller-runtime.webhook	Registering webhook	{"path": "/mutate-v1alpha1-serviceintentions"}
+2024-07-09T22:39:35.438Z	INFO	controller-runtime.webhook	Registering webhook	{"path": "/mutate-v1alpha1-ingressgateway"}
+2024-07-09T22:39:35.438Z	INFO	controller-runtime.webhook	Registering webhook	{"path": "/mutate-v1alpha1-terminatinggateway"}
+2024-07-09T22:39:35.438Z	INFO	controller-runtime.webhook	Registering webhook	{"path": "/mutate-v1alpha1-samenessgroup"}
+2024-07-09T22:39:35.438Z	INFO	controller-runtime.webhook	Registering webhook	{"path": "/mutate-v1alpha1-jwtprovider"}
+2024-07-09T22:39:35.438Z	INFO	controller-runtime.webhook	Registering webhook	{"path": "/mutate-v1alpha1-controlplanerequestlimits"}
+2024-07-09T22:39:35.439Z	INFO	controller-runtime.webhook.webhooks	Starting webhook server
+2024-07-09T22:39:35.439Z	INFO	Starting server	{"kind": "health probe", "addr": "[::]:9445"}
+2024-07-09T22:39:35.439Z	INFO	controller-runtime.certwatcher	Updated current TLS certificate
+2024-07-09T22:39:35.440Z	INFO	controller-runtime.webhook	Serving webhook server	{"host": "", "port": 8080}
+2024-07-09T22:39:35.440Z	INFO	Starting server	{"path": "/metrics", "kind": "metrics", "addr": "[::]:9444"}
+2024-07-09T22:39:35.536Z	INFO	controller-runtime.certwatcher	Starting certificate watcher
+2024-07-09T22:39:35.640Z	INFO	attempting to acquire leader lease consul/consul-controller-lock...
+
+2024-07-09T22:39:51.935Z	INFO	successfully acquired lease consul/consul-controller-lock
+
+2024-07-09T22:39:51.935Z	INFO	Starting EventSource	{"controller": "endpoints", "controllerGroup": "", "controllerKind": "Endpoints", "source": "kind source: *v1.Endpoints"}
+2024-07-09T22:39:51.936Z	INFO	Starting Controller	{"controller": "endpoints", "controllerGroup": "", "controllerKind": "Endpoints"}
+2024-07-09T22:39:51.936Z	INFO	Starting EventSource	{"controller": "gatewayclass", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "GatewayClass", "source": "kind source: *v1beta1.GatewayClass"}
+2024-07-09T22:39:51.936Z	INFO	Starting EventSource	{"controller": "gatewayclass", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "GatewayClass", "source": "kind source: *v1alpha1.GatewayClassConfig"}
+2024-07-09T22:39:51.936Z	INFO	Starting EventSource	{"controller": "gatewayclass", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "GatewayClass", "source": "kind source: *v1beta1.Gateway"}
+2024-07-09T22:39:51.936Z	INFO	Starting Controller	{"controller": "gatewayclass", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "GatewayClass"}
+2024-07-09T22:39:51.936Z	DEBUG	events	consul-connect-injector-9745c57b8-ns97j_57778e79-058c-484c-8370-631b4baa0fd9 became leader	{"type": "Normal", "object": {"kind":"Lease","namespace":"consul","name":"consul-controller-lock","uid":"586f235e-c8e2-45df-a336-71468305e6a0","apiVersion":"coordination.k8s.io/v1","resourceVersion":"2274456"}, "reason": "LeaderElection"}
+2024-07-09T22:39:51.936Z	INFO	Starting EventSource	{"controller": "gatewayclassconfig", "controllerGroup": "consul.hashicorp.com", "controllerKind": "GatewayClassConfig", "source": "kind source: *v1alpha1.GatewayClassConfig"}
+2024-07-09T22:39:51.937Z	INFO	Starting EventSource	{"controller": "gatewayclassconfig", "controllerGroup": "consul.hashicorp.com", "controllerKind": "GatewayClassConfig", "source": "kind source: *v1beta1.GatewayClass"}
+2024-07-09T22:39:51.937Z	INFO	Starting Controller	{"controller": "gatewayclassconfig", "controllerGroup": "consul.hashicorp.com", "controllerKind": "GatewayClassConfig"}
+2024-07-09T22:39:51.937Z	INFO	Starting EventSource	{"controller": "servicedefaults", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ServiceDefaults", "source": "kind source: *v1alpha1.ServiceDefaults"}
+2024-07-09T22:39:51.937Z	INFO	Starting Controller	{"controller": "servicedefaults", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ServiceDefaults"}
+2024-07-09T22:39:51.937Z	INFO	Starting EventSource	{"controller": "gateway", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "Gateway", "source": "kind source: *v1beta1.Gateway"}
+2024-07-09T22:39:51.937Z	INFO	Starting EventSource	{"controller": "gateway", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "Gateway", "source": "kind source: *v1.Deployment"}
+2024-07-09T22:39:51.937Z	INFO	Starting EventSource	{"controller": "gateway", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "Gateway", "source": "kind source: *v1.Service"}
+2024-07-09T22:39:51.937Z	INFO	Starting EventSource	{"controller": "gateway", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "Gateway", "source": "kind source: *v1.Pod"}
+2024-07-09T22:39:51.937Z	INFO	Starting EventSource	{"controller": "gateway", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "Gateway", "source": "kind source: *v1beta1.ReferenceGrant"}
+2024-07-09T22:39:51.938Z	INFO	Starting EventSource	{"controller": "gateway", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "Gateway", "source": "kind source: *v1beta1.GatewayClass"}
+2024-07-09T22:39:51.938Z	INFO	Starting EventSource	{"controller": "gateway", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "Gateway", "source": "kind source: *v1beta1.HTTPRoute"}
+2024-07-09T22:39:51.938Z	INFO	Starting EventSource	{"controller": "gateway", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "Gateway", "source": "kind source: *v1alpha2.TCPRoute"}
+2024-07-09T22:39:51.938Z	INFO	Starting EventSource	{"controller": "gateway", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "Gateway", "source": "kind source: *v1.Secret"}
+2024-07-09T22:39:51.938Z	INFO	Starting EventSource	{"controller": "gateway", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "Gateway", "source": "kind source: *v1alpha1.MeshService"}
+2024-07-09T22:39:51.938Z	INFO	Starting EventSource	{"controller": "gateway", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "Gateway", "source": "kind source: *v1.Endpoints"}
+2024-07-09T22:39:51.939Z	INFO	Starting EventSource	{"controller": "gateway", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "Gateway", "source": "kind source: *v1.Pod"}
+2024-07-09T22:39:51.939Z	INFO	Starting EventSource	{"controller": "gateway", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "Gateway", "source": "channel source: 0xc00080e230"}
+2024-07-09T22:39:51.939Z	INFO	Starting EventSource	{"controller": "gateway", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "Gateway", "source": "channel source: 0xc00080e460"}
+2024-07-09T22:39:51.939Z	INFO	Starting EventSource	{"controller": "serviceresolver", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ServiceResolver", "source": "kind source: *v1alpha1.ServiceResolver"}
+2024-07-09T22:39:51.939Z	INFO	Starting Controller	{"controller": "serviceresolver", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ServiceResolver"}
+2024-07-09T22:39:51.939Z	INFO	Starting EventSource	{"controller": "gateway", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "Gateway", "source": "channel source: 0xc00080e6e0"}
+2024-07-09T22:39:51.939Z	INFO	Starting EventSource	{"controller": "gateway", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "Gateway", "source": "channel source: 0xc00080e780"}
+2024-07-09T22:39:51.939Z	INFO	Starting Controller	{"controller": "gateway", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "Gateway"}
+2024-07-09T22:39:51.938Z	INFO	Starting EventSource	{"controller": "proxydefaults", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ProxyDefaults", "source": "kind source: *v1alpha1.ProxyDefaults"}
+2024-07-09T22:39:51.939Z	INFO	Starting Controller	{"controller": "proxydefaults", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ProxyDefaults"}
+2024-07-09T22:39:51.940Z	INFO	Starting EventSource	{"controller": "exportedservices", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ExportedServices", "source": "kind source: *v1alpha1.ExportedServices"}
+2024-07-09T22:39:51.940Z	INFO	Starting Controller	{"controller": "exportedservices", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ExportedServices"}
+2024-07-09T22:39:51.940Z	INFO	Starting EventSource	{"controller": "mesh", "controllerGroup": "consul.hashicorp.com", "controllerKind": "Mesh", "source": "kind source: *v1alpha1.Mesh"}
+2024-07-09T22:39:51.940Z	INFO	Starting Controller	{"controller": "mesh", "controllerGroup": "consul.hashicorp.com", "controllerKind": "Mesh"}
+2024-07-09T22:39:52.139Z	INFO	Starting EventSource	{"controller": "servicesplitter", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ServiceSplitter", "source": "kind source: *v1alpha1.ServiceSplitter"}
+2024-07-09T22:39:52.236Z	INFO	Starting Controller	{"controller": "servicesplitter", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ServiceSplitter"}
+2024-07-09T22:39:52.337Z	INFO	Starting EventSource	{"controller": "servicerouter", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ServiceRouter", "source": "kind source: *v1alpha1.ServiceRouter"}
+2024-07-09T22:39:52.436Z	INFO	Starting Controller	{"controller": "servicerouter", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ServiceRouter"}
+2024-07-09T22:39:52.338Z	INFO	Starting EventSource	{"controller": "ingressgateway", "controllerGroup": "consul.hashicorp.com", "controllerKind": "IngressGateway", "source": "kind source: *v1alpha1.IngressGateway"}
+2024-07-09T22:39:52.436Z	INFO	Starting Controller	{"controller": "ingressgateway", "controllerGroup": "consul.hashicorp.com", "controllerKind": "IngressGateway"}
+2024-07-09T22:39:52.339Z	INFO	Starting EventSource	{"controller": "terminatinggateway", "controllerGroup": "consul.hashicorp.com", "controllerKind": "TerminatingGateway", "source": "kind source: *v1alpha1.TerminatingGateway"}
+2024-07-09T22:39:52.436Z	INFO	Starting Controller	{"controller": "terminatinggateway", "controllerGroup": "consul.hashicorp.com", "controllerKind": "TerminatingGateway"}
+2024-07-09T22:39:52.339Z	INFO	Starting EventSource	{"controller": "jwtprovider", "controllerGroup": "consul.hashicorp.com", "controllerKind": "JWTProvider", "source": "kind source: *v1alpha1.JWTProvider"}
+2024-07-09T22:39:52.437Z	INFO	Starting Controller	{"controller": "jwtprovider", "controllerGroup": "consul.hashicorp.com", "controllerKind": "JWTProvider"}
+2024-07-09T22:39:52.339Z	INFO	Starting EventSource	{"controller": "serviceintentions", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ServiceIntentions", "source": "kind source: *v1alpha1.ServiceIntentions"}
+2024-07-09T22:39:52.437Z	INFO	Starting Controller	{"controller": "serviceintentions", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ServiceIntentions"}
+2024-07-09T22:39:52.339Z	INFO	Starting EventSource	{"controller": "samenessgroup", "controllerGroup": "consul.hashicorp.com", "controllerKind": "SamenessGroup", "source": "kind source: *v1alpha1.SamenessGroup"}
+2024-07-09T22:39:52.437Z	INFO	Starting Controller	{"controller": "samenessgroup", "controllerGroup": "consul.hashicorp.com", "controllerKind": "SamenessGroup"}
+2024-07-09T22:39:52.339Z	INFO	Starting EventSource	{"controller": "controlplanerequestlimit", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ControlPlaneRequestLimit", "source": "kind source: *v1alpha1.ControlPlaneRequestLimit"}
+2024-07-09T22:39:52.437Z	INFO	Starting Controller	{"controller": "controlplanerequestlimit", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ControlPlaneRequestLimit"}
+2024-07-09T22:39:55.138Z	INFO	Starting workers	{"controller": "ingressgateway", "controllerGroup": "consul.hashicorp.com", "controllerKind": "IngressGateway", "worker count": 1}
+2024-07-09T22:39:55.138Z	INFO	Starting workers	{"controller": "jwtprovider", "controllerGroup": "consul.hashicorp.com", "controllerKind": "JWTProvider", "worker count": 1}
+2024-07-09T22:39:55.139Z	INFO	Starting workers	{"controller": "servicerouter", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ServiceRouter", "worker count": 1}
+2024-07-09T22:39:55.336Z	INFO	Starting workers	{"controller": "samenessgroup", "controllerGroup": "consul.hashicorp.com", "controllerKind": "SamenessGroup", "worker count": 1}
+2024-07-09T22:39:55.336Z	INFO	Starting workers	{"controller": "controlplanerequestlimit", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ControlPlaneRequestLimit", "worker count": 1}
+2024-07-09T22:39:55.337Z	INFO	Starting workers	{"controller": "terminatinggateway", "controllerGroup": "consul.hashicorp.com", "controllerKind": "TerminatingGateway", "worker count": 1}
+2024-07-09T22:39:55.337Z	INFO	Starting workers	{"controller": "mesh", "controllerGroup": "consul.hashicorp.com", "controllerKind": "Mesh", "worker count": 1}
+2024-07-09T22:39:55.337Z	INFO	Starting workers	{"controller": "servicedefaults", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ServiceDefaults", "worker count": 1}
+2024-07-09T22:39:55.337Z	INFO	Starting workers	{"controller": "gateway", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "Gateway", "worker count": 1}
+2024-07-09T22:39:55.337Z	INFO	Starting workers	{"controller": "gatewayclass", "controllerGroup": "gateway.networking.k8s.io", "controllerKind": "GatewayClass", "worker count": 1}
+2024-07-09T22:39:55.338Z	INFO	controllers.GatewayClass	Reconciling GatewayClass	{"gatewayClass": "consul"}
+2024-07-09T22:39:55.338Z	INFO	Starting workers	{"controller": "endpoints", "controllerGroup": "", "controllerKind": "Endpoints", "worker count": 1}
+2024-07-09T22:39:55.338Z	INFO	Starting workers	{"controller": "servicesplitter", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ServiceSplitter", "worker count": 1}
+2024-07-09T22:39:55.338Z	INFO	Starting workers	{"controller": "serviceresolver", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ServiceResolver", "worker count": 1}
+2024-07-09T22:39:55.338Z	INFO	Starting workers	{"controller": "serviceintentions", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ServiceIntentions", "worker count": 1}
+2024-07-09T22:39:55.339Z	INFO	Starting workers	{"controller": "proxydefaults", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ProxyDefaults", "worker count": 1}
+2024-07-09T22:39:55.339Z	INFO	Starting workers	{"controller": "exportedservices", "controllerGroup": "consul.hashicorp.com", "controllerKind": "ExportedServices", "worker count": 1}
+2024-07-09T22:39:55.341Z	INFO	Starting workers	{"controller": "gatewayclassconfig", "controllerGroup": "consul.hashicorp.com", "controllerKind": "GatewayClassConfig", "worker count": 1}
+2024-07-09T22:39:55.341Z	INFO	controller.gateways	Reconciling GatewayClassConfig 	{"gatewayClassConfig": "consul-api-gateway"}
+2024-07-09T22:39:55.338Z	INFO	Reconciling Gateway	{"gateway": "consul/api-gateway"}
+2024-07-09T22:39:55.436Z	INFO	controller.endpoints	retrieved	{"name": "loki-memberlist", "ns": "default"}
+2024-07-09T22:39:55.637Z	INFO	controller.proxydefaults	config entry does not match consul	{"request": "default/global", "modify-index": 5451}
+2024-07-09T22:39:55.737Z	INFO	controller.servicedefaults	adding manual ip to virtual ip table in Consul	{"request": "default/public-api", "name": "public-api"}
+2024-07-09T22:39:55.738Z	INFO	controller.serviceintentions	adding manual ip to virtual ip table in Consul	{"request": "consul/api-gateway", "name": "api-gateway"}
+2024-07-09T22:39:55.937Z	INFO	controller.serviceintentions	adding manual ip to virtual ip table in Consul	{"request": "default/frontend", "name": "frontend"}
+2024-07-09T22:39:56.036Z	INFO	controller.proxydefaults	config entry updated	{"request": "default/global", "request-time": "398.752599ms"}
+2024-07-09T22:39:56.136Z	INFO	controller.endpoints	retrieved	{"name": "consul-connect-injector", "ns": "consul"}
+2024-07-09T22:39:56.037Z	INFO	controller.serviceintentions	adding manual ip to virtual ip table in Consul	{"request": "default/public-api", "name": "public-api"}
+2024-07-09T22:39:56.037Z	INFO	controller.servicedefaults	adding manual ip to virtual ip table in Consul	{"request": "default/frontend", "name": "frontend"}
+2024-07-09T22:39:56.149Z	INFO	controller.servicedefaults	adding manual ip to virtual ip table in Consul	{"request": "default/nginx", "name": "nginx"}
+2024-07-09T22:39:56.151Z	INFO	controller.serviceintentions	adding manual ip to virtual ip table in Consul	{"request": "default/product-api", "name": "product-api"}
+2024-07-09T22:39:56.161Z	INFO	controller.servicedefaults	adding manual ip to virtual ip table in Consul	{"request": "default/payments", "name": "payments"}
+2024-07-09T22:39:56.165Z	INFO	controller.serviceintentions	adding manual ip to virtual ip table in Consul	{"request": "default/product-api-db", "name": "product-api-db"}
+2024-07-09T22:39:56.172Z	INFO	controller.servicedefaults	adding manual ip to virtual ip table in Consul	{"request": "default/product-api-db", "name": "product-api-db"}
+2024-07-09T22:39:56.236Z	INFO	controller.endpoints	retrieved	{"name": "product-api", "ns": "default"}
+2024-07-09T22:39:56.238Z	INFO	controller.serviceintentions	adding manual ip to virtual ip table in Consul	{"request": "default/payments", "name": "payments"}
+2024-07-09T22:39:56.243Z	INFO	controller.servicedefaults	adding manual ip to virtual ip table in Consul	{"request": "default/product-api", "name": "product-api"}
+2024-07-09T22:39:56.244Z	INFO	Upsert Gateway Deployment consul/api-gateway	{"gateway": "consul/api-gateway"}
+2024-07-09T22:39:56.251Z	INFO	controller.proxydefaults	config entry does not match consul	{"request": "default/global", "modify-index": 5451}
+2024-07-09T22:39:56.336Z	INFO	controller.proxydefaults	config entry updated	{"request": "default/global", "request-time": "85.723988ms"}
+2024-07-09T22:39:56.339Z	INFO	controller.endpoints	registering service with Consul	{"name": "product-api", "id": ""}
+2024-07-09T22:39:56.397Z	INFO	controller.endpoints	adding manual ip to virtual ip table in Consul	{"name": "product-api", "id": ""}
+2024-07-09T22:39:56.436Z	INFO	controller.endpoints	registering proxy service with Consul	{"name": "product-api-sidecar-proxy"}
+2024-07-09T22:39:56.636Z	INFO	controller.endpoints	retrieved	{"name": "frontend", "ns": "default"}
+2024-07-09T22:39:56.637Z	INFO	controller.endpoints	registering service with Consul	{"name": "frontend", "id": ""}
+2024-07-09T22:39:56.637Z	INFO	No change to service	{"gateway": "consul/api-gateway"}
+2024-07-09T22:39:56.637Z	INFO	Existing Gateway Deployment found.	{"gateway": "consul/api-gateway"}
+2024-07-09T22:39:56.648Z	INFO	controller.endpoints	adding manual ip to virtual ip table in Consul	{"name": "frontend", "id": ""}
+2024-07-09T22:39:56.649Z	INFO	Updated Deployment	{"gateway": "consul/api-gateway"}
+2024-07-09T22:39:56.649Z	INFO	updating in Consul	{"gateway": "consul/api-gateway", "kind": "http-route", "namespace": "", "name": "http-route-1"}
+2024-07-09T22:39:56.649Z	INFO	updating in Consul	{"gateway": "consul/api-gateway", "kind": "api-gateway", "namespace": "", "name": "api-gateway"}
+2024-07-09T22:39:56.649Z	INFO	registering service in Consul	{"gateway": "consul/api-gateway", "service": "api-gateway", "id": "api-gateway-7c64bc9986-888s2"}
+2024-07-09T22:39:56.736Z	INFO	controller.endpoints	registering proxy service with Consul	{"name": "frontend-sidecar-proxy"}
+2024-07-09T22:39:56.844Z	INFO	controller.endpoints	retrieved	{"name": "prometheus-pushgateway", "ns": "default"}
+2024-07-09T22:39:56.937Z	INFO	controller.endpoints	retrieved	{"name": "loki-headless", "ns": "default"}
+2024-07-09T22:39:57.042Z	INFO	controller.endpoints	retrieved	{"name": "grafana", "ns": "default"}
+2024-07-09T22:39:57.053Z	INFO	controller.endpoints	retrieved	{"name": "prometheus-server", "ns": "default"}
+2024-07-09T22:39:57.065Z	INFO	controller.endpoints	retrieved	{"name": "prometheus-kube-state-metrics", "ns": "default"}
+2024-07-09T22:39:57.136Z	INFO	controller.endpoints	retrieved	{"name": "nginx", "ns": "default"}
+2024-07-09T22:39:57.137Z	INFO	controller.endpoints	registering service with Consul	{"name": "nginx", "id": ""}
+2024-07-09T22:39:57.144Z	INFO	controller.endpoints	adding manual ip to virtual ip table in Consul	{"name": "nginx", "id": ""}
+2024-07-09T22:39:57.150Z	INFO	controller.endpoints	registering proxy service with Consul	{"name": "nginx-sidecar-proxy"}
+2024-07-09T22:39:57.166Z	INFO	controller.endpoints	retrieved	{"name": "payments", "ns": "default"}
+2024-07-09T22:39:57.237Z	INFO	controller.endpoints	registering service with Consul	{"name": "payments", "id": ""}
+2024-07-09T22:39:57.245Z	INFO	controller.endpoints	adding manual ip to virtual ip table in Consul	{"name": "payments", "id": ""}
+2024-07-09T22:39:57.250Z	INFO	controller.endpoints	registering proxy service with Consul	{"name": "payments-sidecar-proxy"}
+2024-07-09T22:39:57.265Z	INFO	controller.endpoints	retrieved	{"name": "loki", "ns": "default"}
+2024-07-09T22:39:57.345Z	INFO	controller.endpoints	retrieved	{"name": "kubernetes", "ns": "default"}
+2024-07-09T22:39:57.354Z	INFO	controller.endpoints	retrieved	{"name": "product-api-db", "ns": "default"}
+2024-07-09T22:39:57.354Z	INFO	controller.endpoints	registering service with Consul	{"name": "product-api-db", "id": ""}
+2024-07-09T22:39:57.360Z	INFO	controller.endpoints	adding manual ip to virtual ip table in Consul	{"name": "product-api-db", "id": ""}
+2024-07-09T22:39:57.436Z	INFO	controller.endpoints	registering proxy service with Consul	{"name": "product-api-db-sidecar-proxy"}
+2024-07-09T22:39:57.451Z	INFO	controller.endpoints	retrieved	{"name": "api-gateway", "ns": "consul"}
+2024-07-09T22:39:57.459Z	INFO	controller.endpoints	retrieved	{"name": "public-api", "ns": "default"}
+2024-07-09T22:39:57.549Z	INFO	controller.endpoints	deregistering service from consul	{"svc": "public-api-675c9dcd98-sxj2l-public-api"}
+2024-07-09T22:39:57.558Z	INFO	controller.endpoints	reconciling ACL tokens for service	{"svc": "public-api"}
+2024-07-09T22:39:57.564Z	INFO	controller.endpoints	deleting ACL token for pod	{"name": "public-api-675c9dcd98-sxj2l"}
+2024-07-09T22:39:57.569Z	INFO	controller.endpoints	deregistering service from consul	{"svc": "public-api-675c9dcd98-sxj2l-public-api-sidecar-proxy"}
+2024-07-09T22:39:57.636Z	INFO	controller.endpoints	reconciling ACL tokens for service	{"svc": "public-api-sidecar-proxy"}
+2024-07-09T22:39:57.639Z	INFO	controller.endpoints	retrieved	{"name": "prometheus-node-exporter", "ns": "default"}
+2024-07-09T22:39:57.653Z	INFO	controller.endpoints	retrieved	{"name": "consul-dns", "ns": "consul"}
+2024-07-09T22:40:00.204Z	INFO	controller.endpoints	retrieved	{"name": "consul-connect-injector", "ns": "consul"}
+2024-07-09T22:40:18.629Z	DEBUG	controller-runtime.webhook.webhooks	received request	{"webhook": "/mutate", "UID": "bbacb4da-1ddf-4272-8c1d-65139bd9af91", "kind": "/v1, Kind=Pod", "resource": {"group":"","version":"v1","resource":"pods"}}
+2024-07-09T22:40:18.632Z	INFO	handler.connect	received pod	{"name": "", "ns": "default"}
+2024-07-09T22:40:18.640Z	DEBUG	controller-runtime.webhook.webhooks	wrote response	{"webhook": "/mutate", "code": 200, "reason": "valid Pod request", "UID": "bbacb4da-1ddf-4272-8c1d-65139bd9af91", "allowed": true}
+2024-07-09T22:40:19.901Z	INFO	controller.endpoints	retrieved	{"name": "public-api", "ns": "default"}
+2024-07-09T22:40:19.902Z	INFO	controller.endpoints	registering service with Consul	{"name": "public-api", "id": ""}
+2024-07-09T22:40:19.910Z	INFO	controller.endpoints	adding manual ip to virtual ip table in Consul	{"name": "public-api", "id": ""}
+2024-07-09T22:40:19.920Z	INFO	controller.endpoints	registering proxy service with Consul	{"name": "public-api-sidecar-proxy"}
+2024-07-09T22:40:24.913Z	INFO	controller.endpoints	retrieved	{"name": "public-api", "ns": "default"}
+2024-07-09T22:40:24.913Z	INFO	controller.endpoints	registering service with Consul	{"name": "public-api", "id": ""}
+2024-07-09T22:40:24.924Z	INFO	controller.endpoints	adding manual ip to virtual ip table in Consul	{"name": "public-api", "id": ""}
+2024-07-09T22:40:24.930Z	INFO	controller.endpoints	registering proxy service with Consul	{"name": "public-api-sidecar-proxy"}
