@@ -59,7 +59,7 @@ module "eks" {
 
   eks_managed_node_groups = {
     consul = {
-      name = "consul"
+      name = "${var.name}-server"
 
       instance_types = ["t3a.medium"]
 
@@ -103,10 +103,13 @@ module "eks" {
 resource "null_resource" "kubernetes_consul_resources" {
   provisioner "local-exec" {
     when    = destroy
-    command = "kubectl delete svc/consul-ui --namespace consul && kubectl delete svc/api-gateway --namespace consul"
+    command = <<EOT
+      (kubectl delete svc/consul-ui --namespace consul || true) && (kubectl delete svc/api-gateway --namespace consul || true)
+    EOT
   }
   depends_on = [module.eks]
 }
+
 
 # https://aws.amazon.com/blogs/containers/amazon-ebs-csi-driver-is-now-generally-available-in-amazon-eks-add-ons/ 
 data "aws_iam_policy" "ebs_csi_policy" {

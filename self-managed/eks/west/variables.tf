@@ -1,5 +1,5 @@
 variable "name" {
-  description = "Tutorial name"
+  description = "Cluster name"
   type        = string
   default     = "learn-consul-gs"
 }
@@ -13,11 +13,17 @@ variable "vpc_region" {
 variable "consul_version" {
   type        = string
   description = "The Consul version"
-  default     = "v1.16.0"
+  default     = "v1.16.6"
+}
+
+variable "server_count" {
+  description = "The number of Nomad servers to run."
+  type        = number
+  default     = 3
 }
 
 resource "random_string" "suffix" {
-  length  = 4
+  length  = 2
   special = false
   upper   = false
 }
