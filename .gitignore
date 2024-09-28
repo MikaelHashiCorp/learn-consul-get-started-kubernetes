@@ -1,3 +1,4 @@
 
 *.tfvars
 *.DS_Store
+self-managed/eks/.DS_Store
