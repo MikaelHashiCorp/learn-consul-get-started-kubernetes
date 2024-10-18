@@ -2,3 +2,5 @@
 *.tfvars
 *.DS_Store
 self-managed/eks/.DS_Store
+self-managed/eks/terraform copy.tfstate.backup
+self-managed/eks/terraform.tfstate.backup
