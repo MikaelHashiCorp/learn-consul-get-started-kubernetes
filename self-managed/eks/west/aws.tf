@@ -59,9 +59,9 @@ module "eks" {
 
       instance_types = ["t3a.medium"]
 
-      min_size     = 1
-      max_size     = 5
-      desired_size = 3
+      min_size     = var.node_min_size
+      max_size     = var.node_max_size
+      desired_size = var.node_desired_size
     }
   }
 
