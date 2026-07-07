@@ -1,5 +1,5 @@
 output "kubernetes_cluster_endpoint" {
-  value = data.aws_eks_cluster.cluster.endpoint
+  value = module.eks.cluster_endpoint
 }
 
 output "kubernetes_cluster_id" {
