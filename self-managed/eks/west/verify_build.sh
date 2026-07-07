@@ -74,12 +74,22 @@ check "Desired node count" "$NG_DESIRED" "$EXPECTED_NODES"
 
 # ── EBS CSI Addon ─────────────────────────────────────────────────────────────
 hdr "EBS CSI Addon"
-ADDON_JSON=$(aws eks describe-addon \
-  --cluster-name "$CLUSTER" --addon-name "$EBS_CSI_ADDON" --region "$REGION" \
-  --query "addon.{status:status,version:addonVersion}" --output json 2>&1)
-
-ADDON_STATUS=$(echo "$ADDON_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['status'])")
-ADDON_VERSION=$(echo "$ADDON_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['version'])")
+# Poll up to 10 minutes — EKS addon API lags behind actual pod state by several
+# minutes after scale-up. The 4-second taint-removal race on node join causes a
+# transient DEGRADED window that the control plane is slow to clear.
+ADDON_STATUS=""; ADDON_VERSION=""; ADDON_ELAPSED=0
+while true; do
+  ADDON_JSON=$(aws eks describe-addon \
+    --cluster-name "$CLUSTER" --addon-name "$EBS_CSI_ADDON" --region "$REGION" \
+    --query "addon.{status:status,version:addonVersion}" --output json 2>&1)
+  ADDON_STATUS=$(echo "$ADDON_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['status'])" 2>/dev/null || echo "UNKNOWN")
+  ADDON_VERSION=$(echo "$ADDON_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['version'])" 2>/dev/null || echo "unknown")
+  [[ "$ADDON_STATUS" == "ACTIVE" ]] && break
+  [[ $ADDON_ELAPSED -ge 600 ]] && break
+  echo "  [${ADDON_ELAPSED}s] EBS CSI addon status: $ADDON_STATUS — waiting for ACTIVE..."
+  sleep 15
+  (( ADDON_ELAPSED += 15 )) || true
+done
 
 check "EBS CSI addon status" "$ADDON_STATUS" "ACTIVE"
 ok "EBS CSI addon version: $ADDON_VERSION"

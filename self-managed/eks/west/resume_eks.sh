@@ -20,6 +20,10 @@ terraform apply -auto-approve \
   -target=aws_lb.consul_ui \
   -target=aws_lb.api_gateway
 
+# Flush outputs to state after targeted apply (targeted apply does not refresh all outputs).
+echo "==> Refreshing Terraform outputs..."
+terraform apply -auto-approve -refresh-only
+
 echo "==> Reading Terraform outputs..."
 TF_OUT=$(terraform output -json)
 
@@ -40,9 +44,9 @@ if [[ "$NG_STATUS" != "ACTIVE" ]]; then
   exit 1
 fi
 
-MIN_SIZE=$(    echo "$TF_OUT" | python3 -c "import sys,json; print(json.load(sys.stdin)['node_group_min_size']['value'])")
-MAX_SIZE=$(    echo "$TF_OUT" | python3 -c "import sys,json; print(json.load(sys.stdin)['node_group_max_size']['value'])")
-DESIRED_SIZE=$(echo "$TF_OUT" | python3 -c "import sys,json; print(json.load(sys.stdin)['node_group_desired_size']['value'])")
+MIN_SIZE=$(    echo "$TF_OUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('node_group_min_size',    {}).get('value', 1))")
+MAX_SIZE=$(    echo "$TF_OUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('node_group_max_size',    {}).get('value', 5))")
+DESIRED_SIZE=$(echo "$TF_OUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('node_group_desired_size', {}).get('value', 3))")
 
 echo "  Scaling:   min=$MIN_SIZE max=$MAX_SIZE desired=$DESIRED_SIZE"
 
@@ -63,6 +67,17 @@ echo "==> Refreshing kubeconfig..."
 aws eks update-kubeconfig \
   --name "$CLUSTER" \
   --region "$REGION"
+
+echo "==> Waiting for nodes to register with Kubernetes API..."
+ELAPSED=0
+while true; do
+  NODE_COUNT=$(kubectl get nodes --no-headers 2>/dev/null | wc -l | tr -d ' ')
+  [[ "$NODE_COUNT" -ge 1 ]] && { echo "  [${ELAPSED}s] $NODE_COUNT node(s) registered."; break; }
+  echo "  [${ELAPSED}s] No nodes registered yet — waiting..."
+  sleep 10
+  (( ELAPSED += 10 )) || true
+  [[ $ELAPSED -ge 300 ]] && { echo "  Timed out waiting for nodes to register."; exit 1; }
+done
 
 echo "==> Waiting for all nodes to be Ready in Kubernetes..."
 kubectl wait node --for=condition=Ready --all --timeout=300s
