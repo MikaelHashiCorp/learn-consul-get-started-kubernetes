@@ -50,6 +50,26 @@ module "eks" {
   subnet_ids             = module.vpc.public_subnets
   endpoint_public_access = true
 
+  # Disable IRSA — we lack iam:CreateOpenIDConnectProvider permission.
+  # EBS CSI driver uses node-level IAM policy instead.
+  enable_irsa = false
+
+  # EKS module v21 requires explicit managed addons for networking.
+  # before_compute=true installs vpc-cni before node groups so nodes
+  # get network connectivity and can register with the API server.
+  addons = {
+    vpc-cni = {
+      before_compute = true
+      most_recent    = true
+    }
+    kube-proxy = {
+      most_recent = true
+    }
+    coredns = {
+      most_recent = true
+    }
+  }
+
   eks_managed_node_groups = {
     consul = {
       name = "${var.name}-server"
@@ -105,30 +125,23 @@ resource "null_resource" "kubernetes_consul_resources" {
 }
 
 
-module "irsa-ebs-csi" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts"
-  version = "6.6.1"
-
-  name                  = "AmazonEKSTFEBSCSIRole-${module.eks.cluster_name}"
-  attach_ebs_csi_policy = true
-
-  oidc_providers = {
-    main = {
-      provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["kube-system:ebs-csi-controller-sa"]
-    }
-  }
+# Attach EBS CSI policy directly to the node IAM role.
+# IRSA (OIDC-based) would require iam:CreateOpenIDConnectProvider which
+# this role does not have. Node-level policy achieves the same result.
+resource "aws_iam_role_policy_attachment" "ebs_csi_node" {
+  role       = module.eks.eks_managed_node_groups["consul"].iam_role_name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
 
 resource "aws_eks_addon" "ebs-csi" {
-  cluster_name             = module.eks.cluster_name
-  addon_name               = "aws-ebs-csi-driver"
-  addon_version            = "v1.62.0-eksbuild.1"
-  service_account_role_arn = module.irsa-ebs-csi.arn
+  cluster_name  = module.eks.cluster_name
+  addon_name    = "aws-ebs-csi-driver"
+  addon_version = "v1.62.0-eksbuild.1"
   tags = {
     "eks_addon" = "ebs-csi"
     "terraform" = "true"
   }
+  depends_on = [aws_iam_role_policy_attachment.ebs_csi_node]
 }
 
 # Mark gp2 as the default StorageClass so Consul server PVCs bind immediately

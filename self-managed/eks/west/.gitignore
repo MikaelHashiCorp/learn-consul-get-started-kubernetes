@@ -5,6 +5,6 @@ vault_token.json
 .terraform.tfstate.lock.info
 .terraform.tfstate
 terraform.tfstate
-terraform.tfstate.backup
+*.backup
 .DS_store
 .terraform.lock.hcl
