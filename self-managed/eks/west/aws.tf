@@ -51,8 +51,13 @@ module "eks" {
   endpoint_public_access = true
 
   # Disable IRSA — we lack iam:CreateOpenIDConnectProvider permission.
-  # EBS CSI driver uses node-level IAM policy instead.
+  # EBS CSI driver uses EKS Pod Identity instead (see aws_eks_pod_identity_association below).
   enable_irsa = false
+
+  # Grant the Terraform caller (aws_mikael.sikora_test-developer) cluster-admin access
+  # automatically. Without this, kubectl fails after every fresh cluster creation because
+  # EKS module v21 does not add the caller to access entries by default.
+  enable_cluster_creator_admin_permissions = true
 
   # EKS module v21 requires explicit managed addons for networking.
   # before_compute=true installs vpc-cni before node groups so nodes
@@ -125,12 +130,55 @@ resource "null_resource" "kubernetes_consul_resources" {
 }
 
 
-# Attach EBS CSI policy directly to the node IAM role.
-# IRSA (OIDC-based) would require iam:CreateOpenIDConnectProvider which
-# this role does not have. Node-level policy achieves the same result.
-resource "aws_iam_role_policy_attachment" "ebs_csi_node" {
-  role       = module.eks.eks_managed_node_groups["consul"].iam_role_name
+# ── EBS CSI Driver IAM — EKS Pod Identity ─────────────────────────────────────
+# IRSA requires iam:CreateOpenIDConnectProvider, which is absent for the
+# aws_mikael.sikora_test-developer role. Pod Identity is used instead.
+#
+# How it works:
+#   1. eks-pod-identity-agent addon (installed below) intercepts credential requests
+#      from pods and exchanges them for STS tokens via the IAM role trust policy.
+#   2. aws_eks_pod_identity_association links the kube-system/ebs-csi-controller-sa
+#      service account to the IAM role.
+#   3. No OIDC provider is required.
+
+# Install eks-pod-identity-agent as a managed addon (required for Pod Identity).
+resource "aws_eks_addon" "pod_identity_agent" {
+  cluster_name = module.eks.cluster_name
+  addon_name   = "eks-pod-identity-agent"
+  depends_on   = [module.eks]
+}
+
+# IAM role for the EBS CSI controller pod.
+data "aws_iam_policy_document" "ebs_csi_assume" {
+  statement {
+    actions = ["sts:AssumeRole", "sts:TagSession"]
+    principals {
+      type        = "Service"
+      identifiers = ["pods.eks.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "ebs_csi" {
+  name               = "AmazonEKS_EBS_CSI_DriverRole_${module.eks.cluster_name}"
+  assume_role_policy = data.aws_iam_policy_document.ebs_csi_assume.json
+  tags = {
+    "terraform" = "true"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "ebs_csi" {
+  role       = aws_iam_role.ebs_csi.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+}
+
+# Bind the IAM role to the EBS CSI controller service account via Pod Identity.
+resource "aws_eks_pod_identity_association" "ebs_csi" {
+  cluster_name    = module.eks.cluster_name
+  namespace       = "kube-system"
+  service_account = "ebs-csi-controller-sa"
+  role_arn        = aws_iam_role.ebs_csi.arn
+  depends_on      = [aws_eks_addon.pod_identity_agent]
 }
 
 resource "aws_eks_addon" "ebs-csi" {
@@ -141,7 +189,7 @@ resource "aws_eks_addon" "ebs-csi" {
     "eks_addon" = "ebs-csi"
     "terraform" = "true"
   }
-  depends_on = [aws_iam_role_policy_attachment.ebs_csi_node]
+  depends_on = [aws_eks_pod_identity_association.ebs_csi]
 }
 
 # Mark gp2 as the default StorageClass so Consul server PVCs bind immediately

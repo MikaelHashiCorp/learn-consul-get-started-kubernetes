@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 EXPECTED_NODES=3
-EXPECTED_K8S_VERSION="1.32"
+EXPECTED_K8S_VERSION="1.36"
 EBS_CSI_ADDON="aws-ebs-csi-driver"
 
 PASS=0

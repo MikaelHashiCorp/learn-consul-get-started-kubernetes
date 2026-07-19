@@ -1,6 +1,6 @@
 name              = "consul-eks"
 vpc_region        = "us-west-2"
-consul_version    = "v2.0.2"
+consul_version    = "v1.22.7"
 node_desired_size = 3
 
 # HC-COMPUTE-011: EDR (Uptycs) — set per deployment environment
