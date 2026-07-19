@@ -1,13 +1,13 @@
 # Elastic IPs
 resource "aws_eip" "nat" {
-  vpc = true
+  domain = "vpc"
   tags = {
     Name = "consul-eks-ti-us-west-2a"
   }
 }
 
 resource "aws_eip" "dp" {
-  vpc = true
+  domain = "vpc"
   tags = {
     Name = "consul-eks-dp-us-west-2a"
   }

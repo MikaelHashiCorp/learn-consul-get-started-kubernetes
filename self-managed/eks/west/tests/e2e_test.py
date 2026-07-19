@@ -45,7 +45,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # ─────────────────────────────────────────────────────────────────────────────
 
 EXPECTED_NODES: int = 3
-EXPECTED_K8S_VERSION: str = "1.33"
+EXPECTED_K8S_VERSION: str = "1.36"
 EBS_CSI_ADDON: str = "aws-ebs-csi-driver"
 CONSUL_NAMESPACE: str = "consul"
 APP_NAMESPACE: str = "default"
