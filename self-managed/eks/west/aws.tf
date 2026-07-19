@@ -133,3 +133,19 @@ resource "aws_eks_addon" "ebs-csi" {
     "terraform" = "true"
   }
 }
+
+# Mark gp2 as the default StorageClass so Consul server PVCs bind immediately
+# after the EBS CSI addon becomes ACTIVE. Without this annotation EKS clusters
+# have no default SC and PVCs stay Pending, causing the Consul Helm release to
+# time out on first apply.
+resource "kubernetes_annotations" "gp2_default_storageclass" {
+  api_version = "storage.k8s.io/v1"
+  kind        = "StorageClass"
+  metadata {
+    name = "gp2"
+  }
+  annotations = {
+    "storageclass.kubernetes.io/is-default-class" = "true"
+  }
+  depends_on = [aws_eks_addon.ebs-csi]
+}

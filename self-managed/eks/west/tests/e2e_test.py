@@ -177,12 +177,18 @@ def consul_token() -> str:
 
 @pytest.fixture(scope="session")
 def consul_http_addr(k8s_core: k8s_client.CoreV1Api) -> str:
-    """Return the Consul UI/API LoadBalancer hostname or IP."""
+    """Return the Consul UI/API LoadBalancer hostname or IP.
+
+    Uses HTTPS when the consul-ui service exposes port 443 (TLS-enabled Helm
+    values), otherwise falls back to HTTP on port 80.
+    """
     svc = k8s_core.read_namespaced_service("consul-ui", CONSUL_NAMESPACE)
     ingress = svc.status.load_balancer.ingress
     assert ingress, "consul-ui LoadBalancer has no ingress — is the cluster up?"
     host = ingress[0].hostname or ingress[0].ip
-    return f"http://{host}"
+    ports = [p.port for p in (svc.spec.ports or [])]
+    scheme = "https" if 443 in ports else "http"
+    return f"{scheme}://{host}"
 
 
 @pytest.fixture(scope="session")
@@ -779,11 +785,15 @@ class TestInterPodConnectivity:
     def test_nginx_to_public_api_http(
         self, k8s_core: k8s_client.CoreV1Api
     ) -> None:
-        """nginx pod must reach public-api:8080/health through the mesh."""
+        """nginx pod must reach public-api:8080 through the mesh.
+
+        public-api (hashicorpdemoapp/public-api) exposes a GraphQL endpoint
+        at /api; the root / also responds. /health does not exist.
+        """
         pod = _get_running_pod(k8s_core, APP_NAMESPACE, "app=nginx")
         rc, stdout, stderr = _pod_exec(
             pod, APP_NAMESPACE,
-            ["wget", "-qO-", "--timeout=5", "http://public-api:8080/health"],
+            ["wget", "-qO-", "--timeout=5", "http://public-api:8080/"],
             container="nginx",
         )
         assert rc == 0, (
@@ -879,14 +889,20 @@ class TestPodToConsulAPI:
     def test_service_dns_resolution(
         self, k8s_core: k8s_client.CoreV1Api
     ) -> None:
-        """Each app service DNS name must resolve from a peer pod."""
+        """Each app service must resolve via Consul DNS (.service.consul).
+
+        With transparent proxy enabled the in-pod DNS is handled by the
+        consul-dataplane sidecar on 127.0.0.1:53.  It resolves Consul-
+        registered names only via .service.consul or .virtual.consul
+        suffixes — bare Kubernetes service names are refused.
+        """
         pod = _get_running_pod(k8s_core, APP_NAMESPACE, "app=nginx")
         services = ["frontend", "public-api", "product-api", "payments"]
         failed: list[str] = []
         for svc in services:
             rc, _, _ = _pod_exec(
                 pod, APP_NAMESPACE,
-                ["nslookup", svc],
+                ["nslookup", f"{svc}.service.consul"],
                 container="nginx",
             )
             if rc != 0:
@@ -896,12 +912,21 @@ class TestPodToConsulAPI:
     def test_consul_agent_xds_port_reachable(
         self, k8s_core: k8s_client.CoreV1Api
     ) -> None:
-        """The consul-dataplane sidecar xDS port (20000) must be listening."""
+        """The consul-dataplane sidecar xDS port (20000) must be listening.
+
+        consul-dataplane uses a distroless image — no shell or nc available.
+        Run the connectivity check from the nginx app container instead
+        (same network namespace).  Port 20000 is bound to the pod IP, not
+        loopback, so use `hostname -i` to resolve the pod's own IP at runtime.
+        BusyBox nc does not support -z; use a plain connect + immediate close.
+        """
         pod = _get_running_pod(k8s_core, APP_NAMESPACE, "app=nginx")
         rc, stdout, stderr = _pod_exec(
             pod, APP_NAMESPACE,
-            ["sh", "-c", "nc -zv 127.0.0.1 20000 2>&1; echo EXIT:$?"],
-            container="consul-dataplane",
+            ["sh", "-c",
+             "POD_IP=$(hostname -i); echo '' | nc $POD_IP 20000; "
+             "echo EXIT:$?"],
+            container="nginx",
         )
         assert "EXIT:0" in (stdout + stderr), (
             f"consul-dataplane xDS port 20000 not reachable: {stderr[:200]}"
@@ -1077,7 +1102,7 @@ class TestEDR:
         cm = k8s_core.read_namespaced_config_map(
             "uptycs-config", UPTYCS_NAMESPACE
         )
-        tags: str = (cm.data or {}).get("tags", "")
+        tags: str = (cm.data or {}).get("osquery.tags", "")
         assert "CCODE/HashiCorp" in tags, (
             f"CCODE/HashiCorp missing from Uptycs tags: '{tags}'"
         )
@@ -1126,18 +1151,24 @@ class TestHashiCupsE2E:
         )
 
     def test_products_api_returns_data(self, api_gw_addr: str) -> None:
-        """GET /api/coffees must return a non-empty JSON list."""
-        resp = requests.get(
-            f"{api_gw_addr}/api/coffees",
+        """GraphQL coffees query must return a non-empty list via /api.
+
+        public-api (hashicorpdemoapp/public-api) exposes a single GraphQL
+        endpoint at POST /api. The REST path /api/coffees does not exist.
+        """
+        resp = requests.post(
+            f"{api_gw_addr}/api",
             timeout=15,
             headers={"Content-Type": "application/json"},
+            json={"query": "{ coffees { id name price } }"},
         )
         assert resp.status_code == 200, (
-            f"/api/coffees returned {resp.status_code}: {resp.text[:200]}"
+            f"GraphQL /api returned {resp.status_code}: {resp.text[:200]}"
         )
         data = resp.json()
-        assert isinstance(data, list) and data, (
-            "/api/coffees returned empty list"
+        coffees = (data.get("data") or {}).get("coffees", [])
+        assert isinstance(coffees, list) and coffees, (
+            "GraphQL coffees query returned empty list"
         )
 
     def test_static_assets_served(self, api_gw_addr: str) -> None:

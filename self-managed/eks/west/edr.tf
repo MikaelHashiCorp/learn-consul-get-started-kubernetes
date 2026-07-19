@@ -58,7 +58,9 @@ resource "null_resource" "uptycs_helm" {
       echo "==> Downloading k8sosquery values for tenant: $${DOMAIN}..."
       VALUES_TGZ=$(mktemp /tmp/uptycs-values-XXXXXX.tgz)
       VALUES_YAML=$(mktemp /tmp/uptycs-values-XXXXXX.yaml)
-      trap 'rm -f "$${VALUES_TGZ}" "$${VALUES_YAML}"' EXIT
+      CA_FILE=$(mktemp /tmp/uptycs-ca-XXXXXX.pem)
+      trap 'rm -f "$${VALUES_TGZ}" "$${VALUES_YAML}" "$${CA_FILE}"' EXIT
+      echo "${module.eks.cluster_certificate_authority_data}" | base64 --decode > "$${CA_FILE}"
 
       curl -fsSL --max-time 30 \
         "$${PORTAL}/api/uptycs/download/container/$${DOMAIN}/$${GROUP_ID}/helm-values" \
@@ -85,7 +87,7 @@ resource "null_resource" "uptycs_helm" {
         --create-namespace \
         --values "$${VALUES_YAML}" \
         --kube-apiserver "${module.eks.cluster_endpoint}" \
-        --kube-ca-file <(echo "${module.eks.cluster_certificate_authority_data}" | base64 --decode) \
+        --kube-ca-file "$${CA_FILE}" \
         --kube-token "${data.aws_eks_cluster_auth.cluster.token}" \
         --wait \
         --timeout 5m
