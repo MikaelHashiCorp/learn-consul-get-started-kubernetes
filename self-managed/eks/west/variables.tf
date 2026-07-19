@@ -34,6 +34,19 @@ variable "node_desired_size" {
   default     = 3
 }
 
+# HC-COMPUTE-011: EDR (Uptycs) tag variables
+variable "uptycs_update_tag" {
+  description = "Uptycs UPDATE tag value. Must reflect deployment environment per IBM Tag Guide (e.g. UPDATE/PROD, UPDATE/DEV, UPDATE/NONE)."
+  type        = string
+  default     = "UPDATE/NONE"
+}
+
+variable "uptycs_owner" {
+  description = "Uptycs OWNER tag value. Set to the team or owner email address (e.g. team@hashicorp.com)."
+  type        = string
+  default     = "team@hashicorp.com"
+}
+
 resource "random_string" "suffix" {
   length  = 2
   special = false

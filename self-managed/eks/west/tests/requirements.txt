@@ -1,0 +1,7 @@
+# tests/requirements.txt — Python dependencies for e2e_test.py
+pytest>=8.0
+pytest-html>=4.0
+boto3>=1.34
+kubernetes>=29.0
+requests>=2.31
+urllib3>=2.0

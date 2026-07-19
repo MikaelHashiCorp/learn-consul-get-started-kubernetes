@@ -149,6 +149,33 @@ else
   fail "kubectl not found — skipping k8s checks"
 fi
 
+# ── EDR (Uptycs) ──────────────────────────────────────────────────────────────
+hdr "EDR (Uptycs HC-COMPUTE-011)"
+if command -v kubectl &>/dev/null; then
+  # Check DaemonSet is deployed and all pods are Ready
+  DS_JSON=$(kubectl get daemonset -n uptycs --no-headers 2>/dev/null || true)
+  if [[ -z "$DS_JSON" ]]; then
+    fail "Uptycs DaemonSet not found in namespace 'uptycs' — was terraform apply run?"
+  else
+    DS_DESIRED=$(kubectl get daemonset -n uptycs -o jsonpath='{.items[0].status.desiredNumberScheduled}' 2>/dev/null || echo "0")
+    DS_READY=$(  kubectl get daemonset -n uptycs -o jsonpath='{.items[0].status.numberReady}'           2>/dev/null || echo "0")
+    check "Uptycs DaemonSet desired pods" "$DS_DESIRED" "$EXPECTED_NODES"
+    check "Uptycs DaemonSet ready pods"   "$DS_READY"   "$EXPECTED_NODES"
+
+    EDR_PODS_BAD=$(kubectl get pods -n uptycs --no-headers 2>/dev/null \
+      | grep -v -E "Running|Completed" | wc -l | tr -d ' ')
+    check "Uptycs pods not Running" "$EDR_PODS_BAD" "0"
+  fi
+
+  # Emit node UUIDs for manual spot-check at https://edr-tools.platformops.ciso.ibm.com/host-verification
+  echo "  Node UUIDs (verify at edr-tools, tenant: Watson 2 / HashiCorp):"
+  kubectl get nodes \
+    -o=jsonpath='{range .items[*]}    {.metadata.name}{"\t"}{.status.nodeInfo.systemUUID}{"\n"}{end}' \
+    2>/dev/null || true
+else
+  fail "kubectl not found — skipping EDR checks"
+fi
+
 # ── Summary ───────────────────────────────────────────────────────────────────
 echo
 echo "══════════════════════════════════════"
