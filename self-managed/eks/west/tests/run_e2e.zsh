@@ -78,12 +78,24 @@ done
 # ── Step 1: doormat auth ──────────────────────────────────────────────────────
 header "AWS authentication"
 if [[ "$USE_DOORMAT" == true ]]; then
-  if ! command -v doormat &>/dev/null; then
-    die "doormat not found. Install it or pass --no-doormat if credentials are pre-exported."
+  # Resolve doormat — not in PATH on non-login shells (execute_command, CI).
+  DOORMAT_BIN="${DOORMAT:-$(command -v doormat 2>/dev/null || echo /opt/homebrew/bin/doormat)}"
+  if [[ ! -x "$DOORMAT_BIN" ]]; then
+    die "doormat not found at '$DOORMAT_BIN'. Install it or pass --no-doormat if credentials are pre-exported."
   fi
-  info "Running: doormat login -f && eval \$(doormat aws export --account aws_mikael.sikora_test)"
-  doormat login -f
-  eval "$(doormat aws export --account aws_mikael.sikora_test)"
+
+  # Only re-authenticate when the session is expired or missing.
+  # doormat login -f (force) always opens a browser SSO flow — interactive.
+  # doormat login --validate exits 0 when the session is valid — non-interactive.
+  if "$DOORMAT_BIN" login --validate &>/dev/null; then
+    ok "doormat: existing session still valid"
+  else
+    info "doormat session expired or missing — re-authenticating..."
+    "$DOORMAT_BIN" login
+  fi
+
+  info "Exporting AWS credentials for account aws_mikael.sikora_test..."
+  eval "$("$DOORMAT_BIN" aws export --account aws_mikael.sikora_test)"
   ok "doormat: credentials exported"
 else
   warn "--no-doormat: assuming AWS credentials are already in environment"
