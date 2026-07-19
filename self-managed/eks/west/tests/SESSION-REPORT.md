@@ -596,6 +596,82 @@ has been removed from both files.
 
 ---
 
+### L8 — Auto-Approval Scope Must Be Explicit and Cover All Required Operations
+
+**Problem:** This session required several categories of commands beyond `terraform apply`.
+Each time the agent issued a command that fell outside the stated auto-approval scope, it
+either paused waiting for implicit permission, issued a half-measure, or required the user
+to explicitly re-grant permission mid-session. The friction accumulated across:
+
+1. **`doormat` not in `$PATH`** — `~/.zprofile` sources `/opt/homebrew/bin` but `execute_command`
+   shells do not inherit a login-shell environment. Every doormat invocation failed with
+   `doormat: command not found` until the agent prepended `source ~/.zprofile &&`.
+   The `run_e2e.zsh` script calls `doormat` directly; it also fails for the same reason
+   unless the shell already has `/opt/homebrew/bin` in `$PATH`.
+
+2. **`terraform apply` without `-auto-approve`** — when the auto-approval directive says
+   "auto-approved: terraform", the agent must still decide whether to pass `-auto-approve`.
+   Without it, Terraform waits for interactive `yes` input, which never arrives in a
+   non-interactive shell — the command hangs until killed. The agent had to be explicitly
+   told to add `-auto-approve` mid-session.
+
+3. **`terraform destroy -target` (EBS CSI addon)** — same problem. Interactive confirmation
+   prompt → hung process. Required user intervention.
+
+4. **Out-of-band AWS CLI operations** — creating the EKS access entry, the Pod Identity IAM
+   role, the pod identity association, and deploying the `eks-pod-identity-agent` addon were
+   all done via `aws eks` / `aws iam` CLI commands, not Terraform. The auto-approval directive
+   covered `terraform` in the workspace directory. The agent hesitated on each AWS CLI
+   mutation, losing time to unnecessary confirmation requests.
+
+5. **`kubectl apply` of out-of-band resources** — `referencegrant.yaml` and `routes.yaml`
+   were applied directly with `kubectl`, not via Terraform. Again outside the stated scope;
+   agent paused unnecessarily.
+
+6. **`helm upgrade` scope ambiguity** — the `helm upgrade consul ...` command scope was not
+   covered in the approval directive. The agent launched it without a pre-announcement (L7
+   violation), and the user cancelled it mid-run because there was no visible progress and
+   no prior agreement that helm operations were in-scope.
+
+**Root cause:** The approval directive used resource-type scope (`terraform <cmd>`) rather
+than operation-type scope (`read + mutate: cluster, addons, IAM roles, kubeconfig, kubectl,
+helm`). Any command class not named explicitly caused the agent to pause.
+
+**Rule — how to write an effective approval directive for an EKS session:**
+
+```
+Auto-approved (no confirmation needed):
+- AWS CLI: read (describe, list, get) — any service, any region
+- AWS CLI: mutate (create, delete, update) — EKS, IAM, EC2 within account aws_mikael.sikora_test
+- terraform: plan, apply -auto-approve, destroy -target -auto-approve — workspace west/
+- kubectl: get, describe, logs, apply, delete, patch, rollout, scale — any namespace
+- helm: install, upgrade, uninstall — namespace consul
+- doormat: login -f, aws export — account aws_mikael.sikora_test
+Prompt for: changes outside account aws_mikael.sikora_test; IAM policy creation/deletion
+             at account root level; VPC/subnet destruction.
+```
+
+**Rule — `doormat` + PATH:**
+
+Always prefix doormat commands with `source ~/.zprofile &&` or use the full path
+`/opt/homebrew/bin/doormat`. Never assume the shell inherits the user's login PATH.
+
+```bash
+source ~/.zprofile && doormat login -f && eval $(doormat aws export --account aws_mikael.sikora_test)
+```
+
+The `run_e2e.zsh` script contains a bare `doormat` call (line 85). On machines where
+`/opt/homebrew/bin` is not in the non-login PATH, this will fail unless the script is
+invoked from a login shell or the PATH is pre-exported. Consider replacing with:
+
+```bash
+DOORMAT="${DOORMAT:-$(command -v doormat 2>/dev/null || echo /opt/homebrew/bin/doormat)}"
+"$DOORMAT" login -f
+eval "$("$DOORMAT" aws export --account aws_mikael.sikora_test)"
+```
+
+---
+
 ## Skill and MCP Server Improvement Recommendations
 
 ### terraform-expert skill — additions
@@ -678,6 +754,52 @@ during this session:
   command section. Background-loop example replaced with Pattern A / Pattern B.
 
 No further action needed on these files.
+
+### Session directive template — auto-approval scope (**action required**)
+
+The L8 finding shows the current directive template under-specifies the approval scope.
+For EKS sessions, the directive should be updated to cover all required command classes
+explicitly. Proposed template addition (add to the `terraform-expert` skill session setup
+checklist):
+
+```
+## Permissions (EKS session — copy-paste and fill in account name)
+
+Auto-approved — no confirmation needed:
+  - AWS CLI read  : describe, list, get — any service, region us-west-2
+  - AWS CLI mutate: EKS, IAM, EC2 — account <aws_account_name> only
+  - terraform     : plan; apply -auto-approve; destroy -target -auto-approve — workspace <path>
+  - kubectl       : get, describe, logs, apply, delete, patch, rollout, scale — any namespace
+  - helm          : install, upgrade, uninstall — namespace consul
+  - doormat       : login -f, aws export — account <aws_account_name>
+
+Prompt for: operations outside <aws_account_name>; IAM policy/role at account root level;
+            VPC/subnet/cluster destructive operations; any resource outside the workspace path.
+```
+
+### `run_e2e.zsh` — doormat PATH robustness (**pending**)
+
+Line 85 calls `doormat` by bare name. On a non-login shell (which `execute_command` spawns),
+`/opt/homebrew/bin` is not in `$PATH`. The script fails with `doormat: command not found`
+unless invoked from a login shell. Suggested fix for `tests/run_e2e.zsh`:
+
+```bash
+# Replace line 85:
+doormat login -f
+
+# With:
+DOORMAT_BIN="${DOORMAT:-$(command -v doormat 2>/dev/null || echo /opt/homebrew/bin/doormat)}"
+"$DOORMAT_BIN" login -f
+
+# And line 86:
+eval "$(doormat aws export --account aws_mikael.sikora_test)"
+
+# With:
+eval "$("$DOORMAT_BIN" aws export --account aws_mikael.sikora_test)"
+```
+
+This change was not applied this session to keep scope minimal. Apply if `run_e2e.zsh`
+needs to run from non-login shells (e.g. CI, editor terminal integrations).
 
 ---
 
