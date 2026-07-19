@@ -40,17 +40,17 @@ data "aws_eks_cluster_auth" "cluster" {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "19.5.1"
+  version = "~> 20.0"
 
-  cluster_name    = local.name
-  cluster_version = "1.32"
+  cluster_name       = local.name
+  kubernetes_version = "1.33"
 
-  vpc_id                         = module.vpc.vpc_id
-  subnet_ids                     = module.vpc.public_subnets
-  cluster_endpoint_public_access = true
+  vpc_id             = module.vpc.vpc_id
+  subnet_ids         = module.vpc.public_subnets
+  endpoint_public_access = true
 
   eks_managed_node_group_defaults = {
-    ami_type = "AL2_x86_64"
+    ami_type = "AL2023_x86_64_STANDARD"
   }
 
   eks_managed_node_groups = {
@@ -92,6 +92,8 @@ module "eks" {
       ipv6_cidr_blocks = ["::/0"]
     }
   }
+
+  enable_cluster_creator_admin_permissions = true
 }
 
 # Uninstalls consul resources (API Gateway controller, Consul-UI, and AWS ELB, and removes associated AWS resources)
@@ -126,7 +128,7 @@ module "irsa-ebs-csi" {
 resource "aws_eks_addon" "ebs-csi" {
   cluster_name             = module.eks.cluster_name
   addon_name               = "aws-ebs-csi-driver"
-  addon_version            = "v1.35.0-eksbuild.1"
+  addon_version            = "v1.62.0-eksbuild.1"
   service_account_role_arn = module.irsa-ebs-csi.iam_role_arn
   tags = {
     "eks_addon" = "ebs-csi"
