@@ -803,15 +803,54 @@ needs to run from non-login shells (e.g. CI, editor terminal integrations).
 
 ---
 
+## Post-Session Audit: Are All Issues Fixed in Code?
+
+Audit performed after session completion. Every issue was checked against the actual files.
+
+| Issue | Root cause | Fixed in code? | Detail |
+|---|---|---|---|
+| I1 — Node group CREATE_FAILED | Missing `vpc-cni`/addons (EKS module v21) | ✅ **Yes** | `aws.tf`: `addons {}` block with `before_compute=true` |
+| I2 — EBS CSI CrashLoopBackOff | No IAM credentials (IRSA blocked, no Pod Identity) | ✅ **Fixed** (post-audit) | `aws.tf`: Pod Identity agent addon + IAM role + `aws_eks_pod_identity_association` added |
+| I3 — kubectl auth failure | Developer IAM role absent from access entries | ✅ **Fixed** (post-audit) | `aws.tf`: `enable_cluster_creator_admin_permissions = true` added to `module "eks"` |
+| I4 — connect-injector CrashLoop | Chart v2.0.2 installed (missing `routeextprocs` CRD) | ✅ **Fixed** (post-audit) | `terraform.tfvars`: `consul_version` corrected from `v2.0.2` → `v1.22.7`; `helm/values-v2.yaml` already pinned to `hashicorp/consul:1.22.7` |
+| I5 — Endpoint reconciler panic | Stale v2.x multi-port annotations on `product-api` | ✅ **Procedural** | No code artifact; rule documented in L5. Re-occurs only after chart downgrade |
+| I6 — API Gateway RefNotPermitted | `ReferenceGrant` applied after HTTPRoute | ⚠️ **Partial** | `hashicups/v2/referencegrant.yaml` exists but is not in Terraform; must be `kubectl apply`-ed manually on fresh cluster |
+
+**Additional stale value found (post-audit):**
+
+| File | Bug | Fix |
+|---|---|---|
+| `verify_build.sh` | `EXPECTED_K8S_VERSION="1.32"` — stale; cluster is 1.36 | Fixed: updated to `"1.36"` |
+
+**Remaining gap — I6 / ReferenceGrant not in Terraform:**
+
+The `ReferenceGrant` is a Kubernetes Gateway API object. It lives in `hashicups/v2/referencegrant.yaml`
+and must currently be applied manually before `api-gw/routes.yaml`. On a fresh cluster this step
+is easy to miss, reproducing I6 exactly. To fully close this gap, add a `kubectl_manifest` resource
+to the Terraform configuration:
+
+```hcl
+resource "kubectl_manifest" "consul_reference_grant" {
+  yaml_body = file("${path.module}/hashicups/v2/referencegrant.yaml")
+  depends_on = [module.eks]
+}
+```
+
+This was not applied in this session to avoid changing the `kubectl_manifest` count in the existing
+Terraform state. Apply on the next full `terraform destroy` + rebuild cycle.
+
+---
+
 ## Files Changed
 
 | File | Change |
 |---|---|
-| [`aws.tf`](aws.tf) | Added `addons {}` block; `enable_irsa=false`; removed IRSA module; fixed EBS CSI IAM pattern |
+| [`aws.tf`](aws.tf) | `addons {}` block; `enable_irsa=false`; Pod Identity IAM stack; `enable_cluster_creator_admin_permissions=true` |
 | [`helm/values-v2.yaml`](helm/values-v2.yaml) | Updated `image` to `hashicorp/consul:1.22.7` |
+| [`terraform.tfvars`](terraform.tfvars) | `consul_version` corrected from `v2.0.2` → `v1.22.7` |
+| [`verify_build.sh`](verify_build.sh) | `EXPECTED_K8S_VERSION` updated `1.32` → `1.36` |
 | `tests/SESSION-REPORT.md` | This file |
 | Applied (not in Terraform) | `hashicups/v2/referencegrant.yaml` |
-| AWS (out-of-band) | Developer role access entry; EKS Pod Identity IAM role + association; Pod Identity agent addon |
 
 ---
 
