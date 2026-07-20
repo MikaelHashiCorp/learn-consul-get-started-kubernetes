@@ -154,8 +154,10 @@ if [[ "$SKIP_HELM" == false ]]; then
   ok "Helm repo updated"
 
   # helm upgrade --install is idempotent: safe to re-run.
-  # --atomic rolls back on failure; --timeout covers server pod scheduling.
+  # --rollback-on-failure rolls back on failure (replaces deprecated --atomic).
   # --wait blocks until all chart-managed pods are Running — no race with kubectl apply steps.
+  # Helm 3.x emits spurious "unrecognized format int32" warnings via warnings.go when
+  # validating CRD schemas against k8s 1.30+ OpenAPI; filter them from stderr.
   info "Installing consul chart ${CONSUL_CHART_VERSION} (may take 5–8 min)..."
   helm upgrade --install consul hashicorp/consul \
     --namespace consul \
@@ -164,7 +166,8 @@ if [[ "$SKIP_HELM" == false ]]; then
     --values "$HELM_VALUES" \
     --wait \
     --timeout 10m \
-    --atomic
+    --rollback-on-failure \
+    2> >(grep -v 'warnings\.go' >&2)
   ok "Consul Helm install done"
 
   # ── Step 5: Apply kubernetes resources ──────────────────────────────────────
