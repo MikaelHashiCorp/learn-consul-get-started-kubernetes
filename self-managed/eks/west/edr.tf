@@ -80,15 +80,20 @@ resource "null_resource" "uptycs_helm" {
       helm repo update uptycs 2>/dev/null
       echo "  OK: repo updated"
 
-      # ── 5. Install / upgrade via Helm ───────────────────────────────────────
+      # ── 5. Update kubeconfig so helm can reach the cluster ──────────────────
+      echo "==> Updating kubeconfig for cluster ${module.eks.cluster_name}..."
+      aws eks update-kubeconfig \
+        --name "${module.eks.cluster_name}" \
+        --region us-west-2 \
+        --alias "tf-uptycs-${module.eks.cluster_name}" 2>/dev/null || true
+
+      # ── 6. Install / upgrade via Helm ───────────────────────────────────────
       echo "==> Running helm upgrade --install..."
       helm upgrade --install uptycs uptycs/k8sosquery \
         --namespace uptycs \
         --create-namespace \
         --values "$${VALUES_YAML}" \
-        --kube-apiserver "${module.eks.cluster_endpoint}" \
-        --kube-ca-file "$${CA_FILE}" \
-        --kube-token "${data.aws_eks_cluster_auth.cluster.token}" \
+        --kube-context "tf-uptycs-${module.eks.cluster_name}" \
         --wait \
         --timeout 5m
       echo "==> Uptycs k8sosquery installed/updated successfully."

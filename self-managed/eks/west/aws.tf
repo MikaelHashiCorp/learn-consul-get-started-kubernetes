@@ -196,14 +196,31 @@ resource "aws_eks_addon" "ebs-csi" {
 # after the EBS CSI addon becomes ACTIVE. Without this annotation EKS clusters
 # have no default SC and PVCs stay Pending, causing the Consul Helm release to
 # time out on first apply.
-resource "kubernetes_annotations" "gp2_default_storageclass" {
-  api_version = "storage.k8s.io/v1"
-  kind        = "StorageClass"
-  metadata {
-    name = "gp2"
+#
+# Implemented as a null_resource local-exec (not kubernetes_annotations) so
+# that the kubernetes provider is never contacted during `terraform destroy` —
+# the StorageClass disappears with the cluster, so there is nothing to undo.
+resource "null_resource" "gp2_default_storageclass" {
+  triggers = {
+    cluster_name = module.eks.cluster_name
+    region       = var.vpc_region
   }
-  annotations = {
-    "storageclass.kubernetes.io/is-default-class" = "true"
+
+  provisioner "local-exec" {
+    interpreter = ["/bin/bash", "-c"]
+    command     = <<-BASH
+      set -euo pipefail
+      aws eks update-kubeconfig \
+        --name "${module.eks.cluster_name}" \
+        --region "${var.vpc_region}" \
+        --alias "tf-gp2-${module.eks.cluster_name}" 2>/dev/null
+      kubectl annotate storageclass gp2 \
+        storageclass.kubernetes.io/is-default-class=true \
+        --overwrite \
+        --context "tf-gp2-${module.eks.cluster_name}" 2>/dev/null || true
+      echo "gp2 StorageClass annotated as default"
+    BASH
   }
+
   depends_on = [aws_eks_addon.ebs-csi]
 }

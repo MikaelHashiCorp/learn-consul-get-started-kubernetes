@@ -252,6 +252,18 @@ cd "${WORKSPACE_DIR}"
 if [[ "${DRY_RUN}" == true ]]; then
   warn "[DRY-RUN] Would run: terraform destroy -auto-approve -input=false"
 else
+  # Remove kubernetes-provider resources from state before destroy so that
+  # the provider never tries to connect to an already-deleted cluster endpoint.
+  # These resources are no-ops on destroy (cluster is being torn down anyway).
+  for rm_resource in \
+    "null_resource.gp2_default_storageclass" \
+    "kubernetes_annotations.gp2_default_storageclass"; do
+    terraform state list 2>/dev/null | grep -qF "${rm_resource}" \
+      && terraform state rm "${rm_resource}" 2>/dev/null \
+      && info "Removed ${rm_resource} from state (no-op on destroy)" \
+      || true
+  done
+
   info "Running terraform destroy -auto-approve (may take 15–20 min)..."
   terraform destroy -auto-approve -input=false
   ok "terraform destroy complete"
