@@ -1,4 +1,4 @@
-name              = "consul-eks"
+name              = "consul-eks-mws"
 vpc_region        = "us-west-2"
 consul_version    = "v1.22.7"
 node_desired_size = 3
