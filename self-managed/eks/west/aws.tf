@@ -211,6 +211,41 @@ resource "null_resource" "sweep_orphaned_enis" {
     BASH
   }
 
+  # --- EBS volume sweep ---
+  # Deletes EBS volumes tagged to this cluster that are in "available" state
+  # (detached).  The EBS CSI driver creates PersistentVolumes as gp2/gp3
+  # volumes; when the PVC/PV is deleted inside Kubernetes the volume is
+  # detached but may not be deleted if the reclaim policy is Retain, or if
+  # the CSI driver pod was not running at the time of deletion.  Sweeping them
+  # here prevents orphaned volumes from accruing cost after destroy.
+  provisioner "local-exec" {
+    when        = destroy
+    interpreter = ["/bin/bash", "-c"]
+    command     = <<-BASH
+      set -euo pipefail
+      CLUSTER="${self.triggers.cluster_name}"
+      REGION="${self.triggers.region}"
+      echo "==> Sweeping EBS volumes for cluster $CLUSTER ($REGION)..."
+      VOL_IDS=$(aws ec2 describe-volumes \
+        --region "$REGION" \
+        --filters "Name=tag-key,Values=kubernetes.io/cluster/$CLUSTER" \
+                  "Name=status,Values=available" \
+        --query "Volumes[*].VolumeId" \
+        --output text)
+      if [[ -z "$VOL_IDS" ]]; then
+        echo "  No cluster-tagged available volumes found."
+      else
+        for VOL in $VOL_IDS; do
+          echo "  Deleting volume $VOL..."
+          aws ec2 delete-volume \
+            --volume-id "$VOL" \
+            --region "$REGION"
+        done
+        echo "  Done."
+      fi
+    BASH
+  }
+
   depends_on = [
     null_resource.kubernetes_consul_resources,
     module.eks,
