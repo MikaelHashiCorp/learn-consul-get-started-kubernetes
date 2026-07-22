@@ -129,6 +129,94 @@ resource "null_resource" "kubernetes_consul_resources" {
   depends_on = [module.eks]
 }
 
+# Sweep orphaned ENIs left by the VPC CNI or ELB controller before Terraform
+# deletes the subnet and security group.  Without this, terraform destroy fails
+# with DependencyViolation when AWS refuses to delete a subnet or SG that still
+# has an attached (or available-but-not-yet-released) ENI.
+#
+# The provisioner runs on destroy only, before the VPC module tears down
+# networking.  It finds every ENI in the VPC that is in "available" state
+# (detached from any instance) and deletes them.  ENIs still attached to a
+# running instance are intentionally skipped — they will be released when their
+# owner resource is destroyed by Terraform.
+resource "null_resource" "sweep_orphaned_enis" {
+  triggers = {
+    vpc_id       = module.vpc.vpc_id
+    cluster_name = local.name
+    region       = var.vpc_region
+  }
+
+  # --- ENI sweep ---
+  # Deletes detached ("available") ENIs left behind by the VPC CNI or ELB
+  # controller.  Must run before Terraform deletes subnets and security groups
+  # or AWS raises DependencyViolation.
+  provisioner "local-exec" {
+    when        = destroy
+    interpreter = ["/bin/bash", "-c"]
+    command     = <<-BASH
+      set -euo pipefail
+      VPC_ID="${self.triggers.vpc_id}"
+      REGION="${self.triggers.region}"
+      echo "==> Sweeping orphaned ENIs in VPC $VPC_ID ($REGION)..."
+      ENI_IDS=$(aws ec2 describe-network-interfaces \
+        --region "$REGION" \
+        --filters "Name=vpc-id,Values=$VPC_ID" "Name=status,Values=available" \
+        --query "NetworkInterfaces[*].NetworkInterfaceId" \
+        --output text)
+      if [[ -z "$ENI_IDS" ]]; then
+        echo "  No orphaned ENIs found."
+      else
+        for ENI in $ENI_IDS; do
+          echo "  Deleting ENI $ENI..."
+          aws ec2 delete-network-interface \
+            --network-interface-id "$ENI" \
+            --region "$REGION"
+        done
+        echo "  Done."
+      fi
+    BASH
+  }
+
+  # --- EBS snapshot sweep ---
+  # Deletes EBS snapshots tagged to this cluster (created by the EBS CSI driver
+  # for VolumeSnapshot objects).  Snapshots are not managed by Terraform and are
+  # not deleted when the EKS cluster or PVCs are removed, so they must be swept
+  # explicitly to avoid orphaned cost.
+  provisioner "local-exec" {
+    when        = destroy
+    interpreter = ["/bin/bash", "-c"]
+    command     = <<-BASH
+      set -euo pipefail
+      CLUSTER="${self.triggers.cluster_name}"
+      REGION="${self.triggers.region}"
+      ACCOUNT=$(aws sts get-caller-identity --region "$REGION" --query Account --output text)
+      echo "==> Sweeping EBS snapshots for cluster $CLUSTER ($REGION)..."
+      SNAP_IDS=$(aws ec2 describe-snapshots \
+        --region "$REGION" \
+        --owner-ids "$ACCOUNT" \
+        --filters "Name=tag-key,Values=kubernetes.io/cluster/$CLUSTER" \
+        --query "Snapshots[*].SnapshotId" \
+        --output text)
+      if [[ -z "$SNAP_IDS" ]]; then
+        echo "  No cluster-tagged snapshots found."
+      else
+        for SNAP in $SNAP_IDS; do
+          echo "  Deleting snapshot $SNAP..."
+          aws ec2 delete-snapshot \
+            --snapshot-id "$SNAP" \
+            --region "$REGION"
+        done
+        echo "  Done."
+      fi
+    BASH
+  }
+
+  depends_on = [
+    null_resource.kubernetes_consul_resources,
+    module.eks,
+  ]
+}
+
 
 # ── EBS CSI Driver IAM — EKS Pod Identity ─────────────────────────────────────
 # IRSA requires iam:CreateOpenIDConnectProvider, which is absent for the
