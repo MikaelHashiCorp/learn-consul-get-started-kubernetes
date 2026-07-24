@@ -6,7 +6,9 @@ global:
   # The prefix used for all resources created in the Helm chart.
   name: consul
   # The consul image version.
-  image: "hashicorp/consul:latest"
+  # image: "hashicorp/consul:latest"
+  image: hashicorp/consul:1.22.7
+  imageK8S: hashicorp/consul-k8s-control-plane:1.9.10
   # The name of the datacenter that the agents should register as.
   datacenter: dc1
   # Enables TLS across the cluster to verify authenticity of the Consul servers and clients.
@@ -17,6 +19,7 @@ global:
     # If true, automatically manage ACL tokens and policies for all Consul components.
     manageSystemACLs: true
   # Exposes Prometheus metrics for the Consul service mesh and sidecars.
+  imagePullPolicy: IfNotPresent
   metrics:
     enabled: true
     # Enables Consul servers and clients metrics.
