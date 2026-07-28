@@ -50,16 +50,3 @@ spec:
   sources:
     - name: product-api
       action: allow
----
-apiVersion: consul.hashicorp.com/v1alpha1
-kind: ServiceIntentions
-metadata:
-  name: payments
-  namespace: default
-# Allow traffic from public-api to payments
-spec:
-  destination:
-    name: payments
-  sources:
-    - name: public-api
-      action: allow

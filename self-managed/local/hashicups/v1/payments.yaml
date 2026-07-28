@@ -36,7 +36,7 @@ metadata:
   labels:
     app: payments
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       app: payments
@@ -45,7 +45,7 @@ spec:
       labels:
         app: payments
       annotations:
-        consul.hashicorp.com/connect-inject: "true"
+        consul.hashicorp.com/connect-inject: "false"
     spec:
       serviceAccountName: payments
       containers:

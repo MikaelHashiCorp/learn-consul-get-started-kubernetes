@@ -18,8 +18,8 @@ global:
   acls:
     # If true, automatically manage ACL tokens and policies for all Consul components.
     manageSystemACLs: true
-  # Exposes Prometheus metrics for the Consul service mesh and sidecars.
   imagePullPolicy: IfNotPresent
+  # Exposes Prometheus metrics for the Consul service mesh and sidecars.
   metrics:
     enabled: true
     # Enables Consul servers and clients metrics.

@@ -6,12 +6,15 @@ global:
   # The prefix used for all resources created in the Helm chart.
   name: consul
   # The consul image version.
-  image: "hashicorp/consul:latest"
+  # image: "hashicorp/consul:latest"
+  image: hashicorp/consul:1.22.7
+  imageK8S: hashicorp/consul-k8s-control-plane:1.9.10
   # The name of the datacenter that the agents should register as.
   datacenter: dc1
   # Enables TLS across the cluster to verify authenticity of the Consul servers and clients.
   tls:
     enabled: true
+  imagePullPolicy: IfNotPresent
   # Enables ACLs across the cluster to secure access to data and APIs.
   acls:
     # If true, automatically manage ACL tokens and policies for all Consul components.
@@ -53,4 +56,5 @@ connectInject:
     managedGatewayClass:
       # Defines the type of service created for gateways (e.g. LoadBalancer, ClusterIP, NodePort)
       # NodePort is primarily used for local deployments.
-      serviceType: LoadBalancer
+      serviceType: NodePort
+      useHostPorts: true

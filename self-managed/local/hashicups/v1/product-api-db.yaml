@@ -46,7 +46,7 @@ spec:
         service: product-api-db
         app: product-api-db
       annotations:
-        consul.hashicorp.com/connect-inject: "true"
+        consul.hashicorp.com/connect-inject: "false"
     spec:
       serviceAccountName: product-api-db
       containers:
