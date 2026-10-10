@@ -14,6 +14,8 @@ global:
   # Enables TLS across the cluster to verify authenticity of the Consul servers and clients.
   tls:
     enabled: true
+    enableAutoEncrypt: true
+    verify: true
   # Enables ACLs across the cluster to secure access to data and APIs.
   acls:
     # If true, automatically manage ACL tokens and policies for all Consul components.
@@ -39,15 +41,10 @@ ui:
   service:
     type: NodePort
   # Enables displaying metrics in the Consul UI.
-  metrics:
-    enabled: true
-    # The metrics provider specification.
-    provider: "prometheus"
-    # The URL of the prometheus metrics server.
-    baseURL: http://prometheus-server.default.svc.cluster.local
 # Configures and installs the automatic Consul Connect sidecar injector.
 connectInject:
   enabled: true
     # Enables metrics for Consul Connect sidecars.
-  metrics:
+  transparentProxy:
     defaultEnabled: true
+  default: true
